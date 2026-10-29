@@ -1,0 +1,27 @@
+name: "mDNS NSEC Guard"
+version: "1.0.0"
+slug: mdns_guard
+description: "Beantwortet Fire-OS-AAAA-Queries (Echo/Fire TV) für Fritzbox-Namen mit einer gültigen NSEC+A-Antwort und stoppt damit die mDNS-Sturm-Loop im LAN"
+arch:
+  - amd64
+startup: system
+boot: auto
+init: false
+host_network: true
+advanced: false
+options:
+  interface_name: enp4s0
+  interface_ip: 192.168.1.21
+  respond_ipv6: true
+  min_interval_ms: 250
+  targets:
+    - FritzBox7590.fritz.box=192.168.1.1
+    - FritzBox7690.fritz.box=192.168.1.25
+    - 192-168-1-1.fritz.box=192.168.1.1
+    - 192-168-1-25.fritz.box=192.168.1.25
+schema:
+  interface_name: str
+  interface_ip: str
+  respond_ipv6: bool
+  min_interval_ms: int
+  targets: [str]
