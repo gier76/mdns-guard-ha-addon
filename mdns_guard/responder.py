@@ -56,7 +56,16 @@ def load_options():
         "interface_name": (opt.get("interface_name") or "enp4s0").strip(),
         "ipv6": bool(opt.get("respond_ipv6", True)),
         "min_interval": max(50, int(opt.get("min_interval_ms") or 250)) / 1000.0,
+        "log_unknown": bool(opt.get("log_unknown", True)),
+        "unknown_interval": max(1000, int(opt.get("unknown_interval_ms") or 60000)) / 1000.0,
     }
+
+
+QTYPE_NAMES = {TYPE_A: "A", TYPE_AAAA: "AAAA", TYPE_NSEC: "NSEC"}
+
+
+def qtype_label(qtype):
+    return QTYPE_NAMES.get(qtype, f"type={qtype}")
 
 
 def encode_name(name):
@@ -161,6 +170,8 @@ def main():
     v6 = None
     sel = selectors.DefaultSelector()
     last_sent = {}
+    unknown_seen = {}   # key -> [count, last_src]
+    last_unknown_log = {}
     opt_mtime = 0.0
     iface_ip = opt["interface_ip"]
     iface_name = opt["interface_name"]
@@ -212,7 +223,24 @@ def main():
             except OSError:
                 continue
             for name, qtype in parse_queries(data):
-                if qtype != TYPE_AAAA or name not in opt["targets"]:
+                if name not in opt["targets"]:
+                    # Query ausserhalb der targets: gedrosselt loggen, damit man
+                    # die Sturm-Namen ohne tcpdump in den Addon-Logs sieht.
+                    if not opt["log_unknown"]:
+                        continue
+                    key = f"{name}|{qtype}"
+                    rec = unknown_seen.get(key)
+                    if rec is None:
+                        rec = unknown_seen[key] = [0, ""]
+                    rec[0] += 1
+                    rec[1] = addr[0]
+                    now = time.monotonic()
+                    if now - last_unknown_log.get(key, -1e9) >= opt["unknown_interval"]:
+                        last_unknown_log[key] = now
+                        log(f"{qtype_label(qtype)} '{name}' von {rec[1]} — {rec[0]} Fragen seit letztem Log (NICHT in targets)")
+                        rec[0] = 0
+                    continue
+                if qtype != TYPE_AAAA:
                     continue
                 now = time.monotonic()
                 if now - last_sent.get(name, 0.0) < opt["min_interval"]:

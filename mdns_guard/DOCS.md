@@ -24,6 +24,16 @@ loadet.
   und IPv6-Scope). Default `enp4s0` / `192.168.1.21`.
 - `respond_ipv6`: antwortet auch auf ff02::fb (IPv6-Multicast). Default true.
 - `min_interval_ms`: Drossel pro Name (Default 250 ms), damit das Addon selbst nie zur Flut wird.
+- `log_unknown`: loggt AAAA/A-Queries für Namen **außerhalb** der targets (dedupelt pro
+  `unknown_interval_ms`, Default 60 s) mit Queryer-IP und Fragezahl — so sieht man in den
+  Addon-Logs direkt, welche Namen ein Gerät sturmt, ohne tcpdump. Die Namen einfach als
+  `name=ip` zu `targets` hinzufügen.
+- `unknown_interval_ms`: Log-Drossel für unbekannte Namen (Default 60000 ms).
+
+## Plattformen
+Unterstützt amd64, aarch64 und armv7 (Raspberry Pi 3/4/5 und ältere Pis). Nur Stdlib,
+kein C-Code. Auf dem Raspberry `interface_name` (z. B. `wlan0`/`eth0`) und
+`interface_ip` auf die Pi-Adresse setzen.
 
 ## Verhalten
 - Start: bindet UDP 5353 (IPv4 + IPv6) im Host-Netz, joint 224.0.0.251 / ff02::fb.

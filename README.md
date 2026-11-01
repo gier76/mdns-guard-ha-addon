@@ -67,6 +67,8 @@ Cycle ist damit harmlos (~1 Query/120 s statt Dauerflut).
 | `interface_ip` | `192.168.1.21` | IPv4-Quelle für Multicast |
 | `respond_ipv6` | `true` | auch auf `ff02::fb` antworten |
 | `min_interval_ms` | `250` | Drossel pro Name (der Responder flutet nie selbst) |
+| `log_unknown` | `true` | logt Queries für Namen außerhalb der targets (mit Queryer-IP + Fragezahl) |
+| `unknown_interval_ms` | `60000` | Log-Drossel für unbekannte Namen; Name dann als `name=ip` zu `targets` hinzufügen |
 
 Beispiel (Targets erweitern, z. B. einen von Echos gepollten Laptop-Namen):
 
@@ -85,7 +87,7 @@ Nach Optionsänderung im HA-UI den Add-on neu starten (oder der Responder liest
 2. „mDNS NSEC Guard“ installieren und starten.
 3. `targets` auf die im Netz gepollten Namen setzen (die Add-on-Logs zeigen, welche Namen queried werden).
 
-Arch: amd64 (HAOS on x86-64). Der Responder braucht `host_network` — er antwortet im
+Arch: amd64, aarch64, armv7 (HAOS x86-64 und Raspberry Pi). Der Responder braucht `host_network` — er antwortet im
 LAN, nicht im Docker-Netz.
 
 ## Verifikation
